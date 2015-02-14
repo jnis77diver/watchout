@@ -1,10 +1,21 @@
 // start slingin' some d3 here.
 
 var width = 960,
-    height = 500;
+    height = 500,
+    radius = 15,
+    numEnemies = 35;
 
-var radii = [10, 20, 30, 40, 50];
-
+var enemies = function(numEnemies) {
+  var enemyArray = [];
+  for (var i = 0; i < numEnemies; i++) {
+    enemyArray.push({i : i,
+      cx: Math.floor(Math.random()*width),
+      cy: Math.floor(Math.random()*height)
+    });
+  }
+  return enemyArray;
+}(numEnemies);
+console.log("enemies is ", enemies);
 
 
 var svg = d3.select("body").append("svg")
@@ -15,7 +26,7 @@ var svg = d3.select("body").append("svg")
     // .attr('left', '200px')
     // .attr('top', '200px');
 
-// var asteroids = d3.select('svg').data(radii)
+// var asteroids = d3.select('svg').data(enemies)
 //     .enter()
 //     .append('circle')
 //     .attr('fill', 'red')
@@ -23,18 +34,33 @@ var svg = d3.select("body").append("svg")
 //     .attr('cx', 125)
 //     .attr('cy', 75);
 
-var player = d3.select('svg').append('rect')
-    .attr('width', 25).attr('height', 25).attr('fill', 'red').attr('x', 250).attr('y', 50);;
+var dragged = d3.behavior.drag().on("drag", function(d) {
+  d.cx += d3.event.dx;
+  d.cy += d3.event.dy;
+  d3.select(this).attr("cx", d.cx).attr("cy", d.cy);
+});
+
+var player = svg.selectAll('circle.player').data([{"cx": 100, "cy": 200 }])
+    .enter().append('circle')
+    .attr('class', 'player')
+    .attr('r', 25).attr('fill', 'red')
+    .attr('cx', function(d) {
+      return d.cx;
+    }).attr('cy', function(d) {
+      return d.cy;
+    })
+    .call(dragged)
+    .on('click', function() {});
 
 
-  var asteroids = svg.selectAll("circle")
-      .data(radii)
+  var asteroids = svg.selectAll("circle.update")
+      .data(enemies)
       .enter()
       .append('circle')
-      .attr('r', function(d){ return d*Math.floor(Math.random()*3); })
+      .attr('r', function(d){ return radius; })
       .attr('fill', 'black')
-      .attr('cx', function(d){ return d + Math.floor(Math.random()*width)})
-      .attr('cy', function(d){ return d + Math.floor(Math.random()*height)});
+      .attr('cx', function(d){ return d.cx; })
+      .attr('cy', function(d){ return d.cy; });
 
 function update(data) {
   // DATA JOIN
@@ -45,7 +71,6 @@ function update(data) {
   // Updating locations
   asteroids.attr("class", "update")
   .transition()
-  .attr('r', function(d){ return d*Math.floor(Math.random()*3); })
   .attr('cx', function(d){ return Math.floor(Math.random()*width)})
   .attr('cy', function(d){ return Math.floor(Math.random()*height)});
 
@@ -68,7 +93,7 @@ function update(data) {
 };
 
 // The initial display.
-update(radii);
+update(enemies);
 // SVG elem data?
   // radius = [5,10,15,30]
   // cx & cy
@@ -77,7 +102,7 @@ update(radii);
 // Grab a random sample of letters from the alphabet, in alphabetical order.
 
   setInterval(function() {
-    update(radii);
+    update(enemies);
   }, 1500);
 
 
