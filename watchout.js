@@ -1,49 +1,66 @@
 // start slingin' some d3 here.
-
-var width = 960,
-    height = 500,
+var width = 1000,
+    height = 750,
     radius = 15,
-    numEnemies = 35;
+    // Button to change number/difficulty
+    numEnemies = 15,
+    playerRadius = 25,
+    playerPos,
+    duration = 2000,
+    easyEnemy = 5,
+    mediumEnemy = 15,
+    hardEnemy = 30;
 
+
+d3.select('button.easy').on('click', function(){
+  console.log('easy')
+  duration = 2000;
+  enemies(easyEnemy);
+});
+
+d3.select('button.medium').on('click', function(){
+  duration = 1500;
+  numEnemies = 15;
+});
+
+d3.select('button.hard').on('click', function(){
+  duration = 1000;
+  numEnemies = 30;
+});
+
+var enemyArray = [];
 var enemies = function(numEnemies) {
-  var enemyArray = [];
   for (var i = 0; i < numEnemies; i++) {
     enemyArray.push({i : i,
-      cx: Math.floor(Math.random()*width),
-      cy: Math.floor(Math.random()*height)
+      'cx': Math.floor(Math.random()*width),
+      'cy': Math.floor(Math.random()*height)
     });
   }
   return enemyArray;
-}(numEnemies);
-console.log("enemies is ", enemies);
-
+};
 
 var svg = d3.select("body").append("svg")
+    .attr('class', 'board')
     .attr("width", width)
     .attr("height", height);
-
-    // .append("g")
-    // .attr('left', '200px')
-    // .attr('top', '200px');
-
-// var asteroids = d3.select('svg').data(enemies)
-//     .enter()
-//     .append('circle')
-//     .attr('fill', 'red')
-//     .attr('r', 15)
-//     .attr('cx', 125)
-//     .attr('cy', 75);
 
 var dragged = d3.behavior.drag().on("drag", function(d) {
   d.cx += d3.event.dx;
   d.cy += d3.event.dy;
+
+  // playerPos =
   d3.select(this).attr("cx", d.cx).attr("cy", d.cy);
 });
 
-var player = svg.selectAll('circle.player').data([{"cx": 100, "cy": 200 }])
+var playerData = [{
+  "cx": 100,
+  "cy": 200
+}];
+
+var player = svg.selectAll('circle.player').data(playerData)
     .enter().append('circle')
     .attr('class', 'player')
-    .attr('r', 25).attr('fill', 'red')
+    .attr('r', playerRadius).attr('fill', 'red')
     .attr('cx', function(d) {
       return d.cx;
     }).attr('cy', function(d) {
@@ -52,59 +69,91 @@ var player = svg.selectAll('circle.player').data([{"cx": 100, "cy": 200 }])
     .call(dragged)
     .on('click', function() {});
 
-
-  var asteroids = svg.selectAll("circle.update")
-      .data(enemies)
+var asteroids;
+var init = function(holder) {
+  console.log("holder is ", holder);
+  asteroids = svg.selectAll("circle.update")
+      .data(holder)
       .enter()
       .append('circle')
       .attr('r', function(d){ return radius; })
       .attr('fill', 'black')
       .attr('cx', function(d){ return d.cx; })
       .attr('cy', function(d){ return d.cy; });
+};
+init(enemies(hardEnemy));
 
-function update(data) {
-  // DATA JOIN
-  // // Join new data with old elements, if any.
-
-
-  // UPDATE
-  // Updating locations
+function update(holder) {
+  // Update asteroid locations
   asteroids.attr("class", "update")
-  .transition()
-  .attr('cx', function(d){ return Math.floor(Math.random()*width)})
-  .attr('cy', function(d){ return Math.floor(Math.random()*height)});
+  .transition().duration(duration)
+  .attr('cx', function(d){ return d.cx = Math.floor(Math.random()*width)})
+  .attr('cy', function(d){ return d.cy = Math.floor(Math.random()*height)})
+  .each('end', function(){
+  update(d3.select(this));
+  console.log("this is ", this);
+  });
+};
+update(enemies(hardEnemy));
 
-  // ENTER
-  // Create new elements as needed.
 
-  // asteroids.enter().append("circle")
-  //     .attr("class", "enter")
-  //     .attr("dy", ".35em");
 
-  // // ENTER + UPDATE
-  // // Appending to the enter selection expands the update selection to include
-  // // entering elements; so, operations on the update selection after appending to
-  // // the enter selection will apply to both entering and updating nodes.
-  // asteroids.attr("cx", function(d, i) { return i * 32; });
-
-  // // EXIT
-  // // Remove old elements as needed.
-  // asteroids.exit().remove();
+var gameStats = {
+  score: 0,
+  best: 0,
+  collisions: 0
 };
 
-// The initial display.
-update(enemies);
-// SVG elem data?
-  // radius = [5,10,15,30]
-  // cx & cy
-  //
+var updateScore = function() {
+  d3.select('#current-score').text(gameStats.score);
+  d3.select('#best-score').text(gameStats.best);
+};
 
-// Grab a random sample of letters from the alphabet, in alphabetical order.
+var collide = function(){
+  gameStats.collisions += 1;
+  gameStats.score = 0;
+  return d3.select('#collision-count').text(gameStats.collisions);
+};
+var increaseScore = function(){
+  gameStats.score += 1;
+  gameStats.best = Math.max(gameStats.score, gameStats.best)
+  updateScore();
+};
 
-  setInterval(function() {
-    update(enemies);
-  }, 1500);
+setInterval(function(){ return increaseScore(); }, 50);
 
 
 
+var preventCollision = false;
+
+var detectCollisions = function(){
+  var collision = false;
+
+  asteroids.each(function(d){
+    var cx = d3.select(this).attr('cx');
+    var cy = d3.select(this).attr('cy');
+
+
+    var playerX = d3.select('circle.player').attr('cx');
+    var playerY = d3.select('circle.player').attr('cy');
+
+
+    var x = cx - playerX;
+    var y = cy - playerY;
+    if(Math.sqrt(x*x + y*y)<(radius + playerRadius)){
+      collision = true;
+    }
+  });
+
+  if(collision){
+    if(preventCollision != collision){
+      collide();
+    }
+  }
+  preventCollision = collision;
+
+
+};
+d3.timer(detectCollisions);
+// setInterval(detectCollisions, 25)
 

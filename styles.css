@@ -17,3 +17,56 @@ Feel free to use it if you like. */
   fill: red;
   stroke: black;
 }
+
+circle.player:hover {
+  cursor: move;
+}
+
+.scoreboard {
+  float: right;
+  background: #3498db;
+  border-radius: 10px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  width: 200px;
+  margin: 5px 0px 10px 10px;
+  padding: 10px 20px;
+  border: 1px solid blue;
+}
+
+.hardness {
+  float: right;
+}
+
+.clear {
+  clear: both;
+}
+
+.btn {
+  width: 120px;
+  background: #326180;
+  background-image: -webkit-linear-gradient(top, #326180, #35a2e6);
+  background-image: -moz-linear-gradient(top, #326180, #35a2e6);
+  background-image: -ms-linear-gradient(top, #326180, #35a2e6);
+  background-image: -o-linear-gradient(top, #326180, #35a2e6);
+  background-image: linear-gradient(to bottom, #326180, #35a2e6);
+  -webkit-border-radius: 10;
+  -moz-border-radius: 10;
+  border-radius: 10px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #35a2e6;
+  background-image: -webkit-linear-gradient(top, #35a2e6, #326180);
+  background-image: -moz-linear-gradient(top, #35a2e6, #326180);
+  background-image: -ms-linear-gradient(top, #35a2e6, #326180);
+  background-image: -o-linear-gradient(top, #35a2e6, #326180);
+  background-image: linear-gradient(to bottom, #35a2e6, #326180);
+  text-decoration: none;
+}
