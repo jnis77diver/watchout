@@ -15,7 +15,6 @@ var width = 1000,
 d3.select('button.easy').on('click', function(){
   console.log('easy')
   duration = 2000;
-  enemies(easyEnemy);
 });
 
 d3.select('button.medium').on('click', function(){
@@ -38,6 +37,7 @@ var enemies = function(numEnemies) {
   }
   return enemyArray;
 };
+enemies(numEnemies);
 
 var svg = d3.select("body").append("svg")
     .attr('class', 'board')
@@ -69,19 +69,16 @@ var player = svg.selectAll('circle.player').data(playerData)
     .call(dragged)
     .on('click', function() {});
 
-var asteroids;
-var init = function(holder) {
-  console.log("holder is ", holder);
-  asteroids = svg.selectAll("circle.update")
-      .data(holder)
+
+var asteroids = svg.selectAll("circle.update")
+      .data(enemies)
       .enter()
       .append('circle')
       .attr('r', function(d){ return radius; })
       .attr('fill', 'black')
       .attr('cx', function(d){ return d.cx; })
       .attr('cy', function(d){ return d.cy; });
-};
-init(enemies(hardEnemy));
+
 
 function update(holder) {
   // Update asteroid locations
@@ -91,12 +88,9 @@ function update(holder) {
   .attr('cy', function(d){ return d.cy = Math.floor(Math.random()*height)})
   .each('end', function(){
   update(d3.select(this));
-  console.log("this is ", this);
   });
 };
-update(enemies(hardEnemy));
-
-
+update(enemies);
 
 var gameStats = {
   score: 0,
